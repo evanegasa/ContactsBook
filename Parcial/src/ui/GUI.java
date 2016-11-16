@@ -7,24 +7,25 @@ import java.util.regex.*;
 import javax.swing.event.*;
 
 import data.Contact;
-import static java.lang.Thread.sleep;
+import java.io.IOException;
 import java.util.TreeMap;
 import static ui.GUI.validateInput;
 
 public class GUI {
     
-    private static final TreeMap<String, Contact> contactos = new TreeMap<>();
+    private static TreeMap<String, Contact> contactos = new TreeMap<>();
 
     static JFrame f = new JFrame("Contacts book");
     static JPanel menu = new JPanel();
     static JLabel errorLabel = new JLabel();
+    
+    
     static Color color = Color.LIGHT_GRAY;
     static Color backColor = Color.WHITE;
     static boolean canSend = true;
 
-    static Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-
-    public GUI() {
+    public GUI(TreeMap<String, Contact> contactos) {
+        this.contactos = contactos;
         init();
         menu();
     }
@@ -40,9 +41,9 @@ public class GUI {
     public static void init(){
         f.setLayout(new GridBagLayout());
         f.getContentPane().setBackground(backColor);
-        f.setPreferredSize(new Dimension(300, 209));
+        f.setPreferredSize(new Dimension(300, 239));
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.setLocation(dim.width / 2 - f.getSize().width / 2, dim.height / 2 - f.getSize().height / 2 - 85);
+        f.setLocationRelativeTo(null);
         f.setResizable(true);
         
         JButton b1 = new JButton("Añadir Contacto");
@@ -70,14 +71,25 @@ public class GUI {
             b5.addActionListener((ActionEvent ae) -> {
                 printKeys(false, false);
             });
-
-        JButton b6 = new JButton("Salir");
+            
+        JButton b6 = new JButton("Guardar Como");
             b6.setBackground(color);
             b6.addActionListener((ActionEvent ae) -> {
+                JFileChooser fileChooser = new JFileChooser();
+            });
+
+        JButton b7 = new JButton("Salir");
+            b7.setBackground(color);
+            b7.addActionListener((ActionEvent ae) -> {
+                try {
+                    logicaDeNegocios.ContactsBook.saveContacts(contactos);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 System.exit(0);
             });
 
-        menu.setLayout(new GridLayout(6, 3, 0, 10));
+        menu.setLayout(new GridLayout(7, 3, 0, 10));
         menu.setBackground(backColor);
 
         menu.add(b1);
@@ -86,6 +98,7 @@ public class GUI {
         menu.add(b4);
         menu.add(b5);
         menu.add(b6);
+        menu.add(b7);
     }
     
     public static void addContact() {

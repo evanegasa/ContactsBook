@@ -1,8 +1,9 @@
 package data;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
-public class Contact{
+public class Contact implements Serializable{
 
     private final String nombre;
     private final String apellido;
@@ -26,6 +27,6 @@ public class Contact{
 
     @Override
     public String toString() {
-        return "Nombre: " + nombre + ", Apellido: " + apellido + ", Correos: " + Arrays.toString(correos) + ", Telefono: " + telefono + ", Celular: " + celular + ", Direccion: " + direccion;
+        return "Nombre: " + nombre + ", Apellido: " + apellido + " Correos: " + Arrays.toString(correos) +'\n'+ ", Telefono: " + telefono + ", \nCelular: " + celular + ", Direccion: " + direccion;
     }
 }

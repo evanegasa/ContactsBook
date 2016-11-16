@@ -1,14 +1,21 @@
 package logicaDeNegocios;
 
 import ui.*;
+import java.io.*;
 import data.Contact;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static ui.ContactsBookUI.*;
 
-public class ContactsBook{
+public class ContactsBook implements Serializable {
 
-    private static final TreeMap<String, Contact> contactos = new TreeMap<>();
+    private static TreeMap<String, Contact> contactos = new TreeMap<>();
 
+    private static ObjectOutputStream output;
+    private static ObjectInputStream input;
+    
+    
     static String nombre;
     static String apellido;
     static String[] correos;
@@ -52,10 +59,33 @@ public class ContactsBook{
         printContact(contactos.get(getKey(contactos, "ver")));
     }
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException, IOException {
+        
+        input = new ObjectInputStream(new FileInputStream("C:\\Users\\Estudiante\\Documents\\NetBeansProjects\\Parcial\\src\\data\\contacts.db"));
+        
+        try {
+            contactos = (TreeMap<String, Contact>) input.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        
         while(args.length != 0){
             menu();
         }
-        GUI gui = new GUI();
+        
+        GUI gui = new GUI(contactos);
+    }
+    
+    public static void saveContacts(TreeMap<String, Contact> a) throws IOException {
+            
+        output = new ObjectOutputStream(new FileOutputStream("C:\\Users\\Estudiante\\Documents\\NetBeansProjects\\Parcial\\src\\data\\contacts.db"));
+
+        try {
+            output.writeObject(a);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        output.close();
     }
 }
