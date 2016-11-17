@@ -5,6 +5,8 @@ import java.util.Arrays;
 
 public class Contact implements Serializable{
 
+    private static final long serialVersionUID = 1365869385288780493L;
+
     private final String nombre;
     private final String apellido;
     private final String[] correos;
@@ -24,6 +26,32 @@ public class Contact implements Serializable{
     public String getKey() {
         return nombre + " " + apellido;
     }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+
+    public String[] getCorreos() {
+        return correos;
+    }
+
+    public int getTelefono() {
+        return telefono;
+    }
+
+    public long getCelular() {
+        return celular;
+    }
+
+    public String getDireccion() {
+        return direccion;
+    }
+    
+        
 
     @Override
     public String toString() {

@@ -3,18 +3,18 @@ package logicaDeNegocios;
 import ui.*;
 import java.io.*;
 import data.Contact;
+import java.util.Arrays;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import static ui.ContactsBookUI.*;
 
 public class ContactsBook implements Serializable {
+
+    private static final long serialVersionUID = -3354722090009835921L;
 
     private static TreeMap<String, Contact> contactos = new TreeMap<>();
 
     private static ObjectOutputStream output;
     private static ObjectInputStream input;
-    
     
     static String nombre;
     static String apellido;
@@ -61,7 +61,7 @@ public class ContactsBook implements Serializable {
     
     public static void main(String[] args) throws FileNotFoundException, IOException {
         
-        input = new ObjectInputStream(new FileInputStream("C:\\Users\\Estudiante\\Documents\\NetBeansProjects\\Parcial\\src\\data\\contacts.db"));
+        input = new ObjectInputStream(new FileInputStream("C:\\Users\\Emmanuel Vanegas\\Documents\\NetBeansProjects\\ContactsBookFile\\Parcial\\src\\data\\contacts.db"));
         
         try {
             contactos = (TreeMap<String, Contact>) input.readObject();
@@ -78,14 +78,35 @@ public class ContactsBook implements Serializable {
     
     public static void saveContacts(TreeMap<String, Contact> a) throws IOException {
             
-        output = new ObjectOutputStream(new FileOutputStream("C:\\Users\\Estudiante\\Documents\\NetBeansProjects\\Parcial\\src\\data\\contacts.db"));
+        output = new ObjectOutputStream(new FileOutputStream("C:\\Users\\Emmanuel Vanegas\\Documents\\NetBeansProjects\\ContactsBookFile\\Parcial\\src\\data\\contacts.db"));
 
         try {
             output.writeObject(a);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         output.close();
     }
+
+    public static void exportSelectedFile(TreeMap<String, Contact> a, File selectedFile) throws IOException {
+        FileWriter output = new FileWriter(selectedFile);
+        output.append("NOMBRE, APELLIDO, CORREOS, TELEFONO, CELULAR, DIRECCION\n");
+        for (Contact contacto : contactos.values()) {
+            output.append(contacto.getNombre());
+            output.append(",");
+            output.append(contacto.getApellido());
+            output.append(",");
+            output.append(Arrays.toString(contacto.getCorreos()));
+            output.append(",");
+            output.append(Integer.toString(contacto.getTelefono()));
+            output.append(",");
+            output.append(Long.toString(contacto.getCelular()));
+            output.append(",");
+            output.append(contacto.getDireccion());
+            output.append("\n");
+        }
+        output.close();
+    }
+
 }

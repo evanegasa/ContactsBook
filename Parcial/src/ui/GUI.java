@@ -7,6 +7,7 @@ import java.util.regex.*;
 import javax.swing.event.*;
 
 import data.Contact;
+import java.io.File;
 import java.io.IOException;
 import java.util.TreeMap;
 import static ui.GUI.validateInput;
@@ -18,8 +19,8 @@ public class GUI {
     static JFrame f = new JFrame("Contacts book");
     static JPanel menu = new JPanel();
     static JLabel errorLabel = new JLabel();
-    
-    
+    static JFileChooser fc = new JFileChooser();
+    static File selectedFile = new File("");
     static Color color = Color.LIGHT_GRAY;
     static Color backColor = Color.WHITE;
     static boolean canSend = true;
@@ -72,10 +73,20 @@ public class GUI {
                 printKeys(false, false);
             });
             
-        JButton b6 = new JButton("Guardar Como");
+        JButton b6 = new JButton("Exportar Contactos");
             b6.setBackground(color);
             b6.addActionListener((ActionEvent ae) -> {
-                JFileChooser fileChooser = new JFileChooser();
+                fc.setCurrentDirectory(new File(System.getProperty("user.home")));
+                int result = fc.showOpenDialog(menu);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    try {
+                        logicaDeNegocios.ContactsBook.exportSelectedFile(contactos, fc.getSelectedFile());
+                        System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    
+                }
             });
 
         JButton b7 = new JButton("Salir");
