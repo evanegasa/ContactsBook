@@ -50,11 +50,9 @@ public class Contact implements Serializable{
     public String getDireccion() {
         return direccion;
     }
-    
-        
 
     @Override
     public String toString() {
-        return "Nombre: " + nombre + ", Apellido: " + apellido + " Correos: " + Arrays.toString(correos) +'\n'+ ", Telefono: " + telefono + ", \nCelular: " + celular + ", Direccion: " + direccion;
+        return "<html>Nombre: " + nombre + "<br> Apellido: " + apellido + "<br> Correos: " + Arrays.toString(correos) + "<br> Telefono: " + telefono + "<br>Celular: " + celular + "<br> Direccion: " + direccion + "</html>";
     }
 }

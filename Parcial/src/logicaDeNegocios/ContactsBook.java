@@ -61,8 +61,12 @@ public class ContactsBook implements Serializable {
     
     public static void main(String[] args) throws FileNotFoundException, IOException {
         
-        input = new ObjectInputStream(new FileInputStream("C:\\Users\\Emmanuel Vanegas\\Documents\\NetBeansProjects\\ContactsBookFile\\Parcial\\src\\data\\contacts.db"));
-        
+        try {
+            input = new ObjectInputStream(new FileInputStream("C:\\Users\\Emmanuel Vanegas\\Documents\\NetBeansProjects\\ContactsBookFile\\Parcial\\src\\data\\contacts.db"));
+        } catch (Exception e) {
+            output = new ObjectOutputStream(new FileOutputStream("C:\\Users\\Emmanuel Vanegas\\Documents\\NetBeansProjects\\ContactsBookFile\\Parcial\\src\\data\\contacts.db"));
+            input = new ObjectInputStream(new FileInputStream("C:\\Users\\Emmanuel Vanegas\\Documents\\NetBeansProjects\\ContactsBookFile\\Parcial\\src\\data\\contacts.db"));
+        }
         try {
             contactos = (TreeMap<String, Contact>) input.readObject();
         } catch (IOException | ClassNotFoundException e) {

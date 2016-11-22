@@ -4,12 +4,11 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 import java.util.regex.*;
+import java.util.TreeMap;
 import javax.swing.event.*;
 
 import data.Contact;
-import java.io.File;
-import java.io.IOException;
-import java.util.TreeMap;
+import java.io.*;
 import static ui.GUI.validateInput;
 
 public class GUI {
@@ -23,7 +22,7 @@ public class GUI {
     static File selectedFile = new File("");
     static Color color = Color.LIGHT_GRAY;
     static Color backColor = Color.WHITE;
-    static boolean canSend = true;
+    static int canSend = 0;
 
     public GUI(TreeMap<String, Contact> contactos) {
         this.contactos = contactos;
@@ -42,10 +41,28 @@ public class GUI {
     public static void init(){
         f.setLayout(new GridBagLayout());
         f.getContentPane().setBackground(backColor);
-        f.setPreferredSize(new Dimension(300, 239));
+        f.setPreferredSize(new Dimension(300, 260));
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.setLocationRelativeTo(null);
-        f.setResizable(true);
+        f.setResizable(false);
+        
+        f.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                if (JOptionPane.showConfirmDialog(f, "Está seguro que desea salir?", "", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION){
+                    if (JOptionPane.showConfirmDialog(f, "Desea guardar los cambios?", "", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION){
+                        try {
+                            logicaDeNegocios.ContactsBook.saveContacts(contactos);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        System.exit(0);
+                    }
+                    System.exit(0);
+                } else {
+                    f.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+                }
+            }
+        });
         
         JButton b1 = new JButton("Añadir Contacto");
             b1.setBackground(color);
@@ -76,6 +93,9 @@ public class GUI {
         JButton b6 = new JButton("Exportar Contactos");
             b6.setBackground(color);
             b6.addActionListener((ActionEvent ae) -> {
+                fc.setDialogTitle("Exportar Contactos");
+                fc.setDragEnabled(false);
+                fc.setMultiSelectionEnabled(false);
                 fc.setCurrentDirectory(new File(System.getProperty("user.home")));
                 int result = fc.showOpenDialog(menu);
                 if (result == JFileChooser.APPROVE_OPTION) {
@@ -85,11 +105,10 @@ public class GUI {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    
                 }
             });
 
-        JButton b7 = new JButton("Salir");
+        JButton b7 = new JButton("Guardar y Salir");
             b7.setBackground(color);
             b7.addActionListener((ActionEvent ae) -> {
                 try {
@@ -127,19 +146,25 @@ public class GUI {
                    f3 = new JTextField(),
                    f4 = new JTextField(),
                    f5 = new JTextField(),
-                   f6 = new JTextField();
+                   f6 = new JTextField(),
+                   f7 = new JTextField(),
+                   f8 = new JTextField(),
+                   f9 = new JTextField();
         
-        JTextField[] fields = {f1, f2, f3, f4, f5, f6};
-        JLabel[] labels = {new JLabel("Nombres"), new JLabel("Apellidos"), new JLabel("Correo"), new JLabel("Telefono"), new JLabel("Celular"), new JLabel("Direccion")};
+        JTextField[] fields = {f1, f2, f3, f4, f5, f6, f7, f8, f9};
+        JLabel[] labels = {new JLabel("*Nombres"), new JLabel("*Apellidos"), new JLabel("*Correo #1"), new JLabel(" Correo #2"), new JLabel(" Correo #3"), new JLabel(" Correo #4"), new JLabel("*Telefono"), new JLabel("*Celular"), new JLabel("*Direccion")};
         
         f1.getDocument().addDocumentListener(new FieldListener(f1, "[a-zA-Z]+", 3, 10));
         f2.getDocument().addDocumentListener(new FieldListener(f2, "[a-zA-Z]+", 3, 10));
         f3.getDocument().addDocumentListener(new FieldListener(f3, ".+@{1}.+", 11, 30));
-        f4.getDocument().addDocumentListener(new FieldListener(f4, "[0-9]+", 7, 7));
-        f5.getDocument().addDocumentListener(new FieldListener(f5, "[0-9]+", 10, 10));
-        f6.getDocument().addDocumentListener(new FieldListener(f6, ".+",10, 30));
+        f4.getDocument().addDocumentListener(new FieldListener(f4, ".+@{1}.+", 11, 30));
+        f5.getDocument().addDocumentListener(new FieldListener(f5, ".+@{1}.+", 11, 30));
+        f6.getDocument().addDocumentListener(new FieldListener(f6, ".+@{1}.+", 11, 30));
+        f7.getDocument().addDocumentListener(new FieldListener(f7, "[0-9]+", 7, 7));
+        f8.getDocument().addDocumentListener(new FieldListener(f8, "[0-9]+", 10, 10));
+        f9.getDocument().addDocumentListener(new FieldListener(f9, ".+",10, 30));
         
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 9; i++) {
             labels[i].setPreferredSize(new Dimension(100, 20));
             gbc.gridx = 0;
             gbc.gridy = i;
@@ -151,22 +176,24 @@ public class GUI {
             contactPanel.add(fields[i], gbc);
         }
         
-        JButton b1 = new JButton("Añadir");
-            b1.addActionListener((ActionEvent ae) -> {
+        JButton b2 = new JButton("Añadir");
+            b2.addActionListener((ActionEvent ae) -> {
                 boolean isNull = false;
-                for (JTextField field : fields) {
-                    if(field.getText().equals("")){
-                        isNull = true;
-                    } else {
-                        isNull = false;
-                        errorLabel.setForeground(Color.RED);
-                        errorLabel.setText("Los campos no pueden estar vacios");
+                for (int i = 0; i < 9; i++) {
+                    if(i < 2 && i > 4){
+                        if(fields[i].getText().equals("") && i == 2){
+                            isNull = true;
+                            errorLabel.setText("*Estos campos son obligatorios");
+                            errorLabel.setForeground(Color.RED);
+                            break;
+                        } else {
+                            isNull = false;
+                        }
                     }
                 }
-                if(canSend && !isNull){
-                    String[] s = new String[5];
-                    s[0] = f3.getText();
-                    Contact contact = new Contact(f1.getText(), f2.getText(), s, Integer.parseInt(f4.getText()), Long.parseLong(f5.getText()), f6.getText());
+                if(canSend == 6 && !isNull){
+                    String[] s = {f3.getText(), f4.getText(), f5.getText(), f6.getText()};
+                    Contact contact = new Contact(f1.getText(), f2.getText(), s, Integer.parseInt(f7.getText()), Long.parseLong(f8.getText()), f9.getText());
                     contactos.put(contact.getKey(), contact);
                     f.remove(contactPanel);
                     f.remove(contactPanel);
@@ -176,8 +203,8 @@ public class GUI {
                 }
             });
         
-        JButton b2 = new JButton("Descartar");
-            b2.addActionListener((ActionEvent ae) -> {
+        JButton b3 = new JButton("Descartar");
+            b3.addActionListener((ActionEvent ae) -> {
                 f.remove(contactPanel);
                 menu();
             });
@@ -185,17 +212,17 @@ public class GUI {
             gbc.insets = new Insets(7, 0, 0, 0);
             gbc.gridx = 0;
         
-            gbc.gridy = 6;
-            gbc.gridwidth = 2;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-        contactPanel.add(b1, gbc);
-            
-            gbc.gridy = 7;
+            gbc.gridy = 9;
             gbc.gridwidth = 2;
             gbc.fill = GridBagConstraints.HORIZONTAL;
         contactPanel.add(b2, gbc);
+            
+            gbc.gridy = 10;
+            gbc.gridwidth = 2;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+        contactPanel.add(b3, gbc);
         
-            gbc.gridy = 8;
+            gbc.gridy = 11;
             gbc.gridwidth = 2;
             gbc.fill = GridBagConstraints.HORIZONTAL;
         contactPanel.add(errorLabel, gbc);
@@ -216,15 +243,19 @@ public class GUI {
         for (Contact m : contactos.values()) {
             JButton b = new JButton(m.getKey());
             b.addActionListener((ActionEvent ae) -> {
-                keyPanel.removeAll();
+                f.remove(keyPanel);
                 if(delete){
-                    contactos.remove(m.getKey());
-                    completionMessage("El contacto se eliminó exitosamente");
-                }
-                if(newContact){
-                    addContact();
+                    if (JOptionPane.showConfirmDialog(f, "Está seguro de eliminar este contacto?", "", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION){
+                        contactos.remove(m.getKey());
+                        completionMessage("El contacto se eliminó exitosamente");
+                    }
+                    printKeys(true, false);
                 }else{
-                    printData(m);
+                    if(newContact){
+                        addContact();
+                    }else{
+                        printData(m);
+                    }
                 }
             });
             keyPanel.add(b);
@@ -245,60 +276,65 @@ public class GUI {
     }
     
     private static void printData(Contact m) {
-        
+        f.remove(menu);
         JPanel dataPanel = new JPanel();
-            dataPanel.setBackground(backColor);
+        JScrollPane dataPane = new JScrollPane(dataPanel);
         
-        if(m != null){
-            dataPanel.setLayout(new GridLayout(2, 1, 0, 7));
-            dataPanel.add(new JLabel(m.toString()));
-        } else {
-            dataPanel.setLayout(new GridLayout(contactos.size()+1, 1, 0, 7));
-            for (Contact c : contactos.values()) {
-                dataPanel.add(new JLabel(c.toString()));
-            }
-        }
-                
-        JButton q = new JButton("Volver al menu");
-            q.addActionListener((ActionEvent ae) -> {
+        JButton b = new JButton("Volver al menu");
+            b.addActionListener((ActionEvent ae) -> {
+                f.remove(dataPane);
                 f.remove(dataPanel);
                 menu();
             });
+            b.setPreferredSize(new Dimension(147, 26));
             
-        dataPanel.add(q);
-        f.remove(menu);
-        f.add(dataPanel);
+        if(m != null){
+            dataPanel.setBackground(backColor);
+            dataPanel.setLayout(new GridLayout(2, 1, 0, 10));
+            dataPanel.add(new JLabel(m.toString()));
+            dataPanel.add(b);
+            f.add(dataPanel);
+        } else {
+            dataPanel.setLayout(new GridLayout(contactos.size()+1, 1, 0, 10));
+            for (Contact c : contactos.values()) {
+                dataPanel.add(new JLabel(c.toString()));
+            }
+            dataPanel.add(b);
+            dataPane.setPreferredSize(new Dimension(290, 210));
+            f.add(dataPane);
+        }
+                
         f.pack();
         f.setSize(f.getWidth() + 80, f.getHeight() + 50);
         f.setLocationRelativeTo(null);
         f.setVisible(true);
     }
     
-    public static void validateInput(JTextField field, String string, int minlength, int maxLength){
+    public static boolean validateInput(JTextField field, String string, int minlength, int maxLength){
         Pattern r = Pattern.compile(string);
         Matcher m = r.matcher(field.getText());
         if (m.matches() && field.getText().length() >= minlength && field.getText().length() <= maxLength){
             errorLabel.setForeground(f.getBackground());
-            canSend = true;
+            return true;
         }else{
             errorLabel.setForeground(Color.RED);
             errorLabel.setText(string + "El tamaño debe ser entre: " + minlength + " y " + maxLength);
-            canSend = false;
+            return false;
         }
     }
     
     private static void completionMessage(String message){
         JOptionPane.showMessageDialog(null, message , "", JOptionPane.DEFAULT_OPTION);
     }
-
 }
 
 class FieldListener implements DocumentListener{
 
-    private JTextField field;
-    private String string;
-    private int minLength;
-    private int maxLength;
+    private final JTextField field;
+    private final String string;
+    private final int minLength;
+    private final int maxLength;
+    private boolean canSend = false;
     
     public FieldListener(JTextField field, String string, int minLength, int maxLength) {
         this.field = field;
@@ -309,14 +345,27 @@ class FieldListener implements DocumentListener{
     
     @Override
     public void removeUpdate(DocumentEvent e) {
-        validateInput(field, string, minLength, maxLength);
+        if(canSend != validateInput(field, string, minLength, maxLength)){
+            canSend = !canSend;
+            if(canSend){
+                GUI.canSend ++;
+            } else {
+                GUI.canSend --;
+            }
+        }
     }
 
     @Override
     public void insertUpdate(DocumentEvent e) {
-        validateInput(field, string, minLength, maxLength);
+        if(canSend != validateInput(field, string, minLength, maxLength)){
+            canSend = !canSend;
+            if(canSend){
+                GUI.canSend ++;
+            } else {
+                GUI.canSend --;
+            }
+        }
     }
-
     @Override
     public void changedUpdate(DocumentEvent e) {
     }
